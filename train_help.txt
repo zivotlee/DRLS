@@ -1,0 +1,127 @@
+optional arguments:
+  -h, --help            show this help message and exit
+  --seed SEED           random seed (default: 42)
+  --eps EPS             epsilon (default: 1e-6)
+  --num_proc NUM_PROC   number of processors (default: 1)
+  --num_exp NUM_EXP     number of experiments (default: 10)
+  --query_type QUERY_TYPE
+                        query type (default: tpch)
+  --job_folder JOB_FOLDER
+                        job folder path (default: ./spark_env/tpch/)
+  --result_folder RESULT_FOLDER
+                        Result folder path (default: ./results)
+  --model_folder MODEL_FOLDER
+                        Model folder path (default: ./models)
+  --exec_cap EXEC_CAP   Number of total executors (default: 100)
+  --num_init_dags NUM_INIT_DAGS
+                        Number of initial DAGs in system (default: 10)
+  --num_stream_dags NUM_STREAM_DAGS
+                        number of streaming DAGs (default: 100)
+  --num_stream_dags_grow NUM_STREAM_DAGS_GROW
+                        growth rate of number of streaming jobs (default: 0.2)
+  --num_stream_dags_max NUM_STREAM_DAGS_MAX
+                        maximum number of number of streaming jobs (default:
+                        500)
+  --stream_interval STREAM_INTERVAL
+                        inter job arrival time in milliseconds (default:
+                        25000)
+  --executor_data_point EXECUTOR_DATA_POINT [EXECUTOR_DATA_POINT ...]
+                        Number of executors used in data collection
+  --reward_scale REWARD_SCALE
+                        scale the reward to some normal values (default:
+                        100000.0)
+  --alibaba ALIBABA     Use Alibaba dags (defaule: False)
+  --var_num_dags VAR_NUM_DAGS
+                        Vary number of dags in batch (default: False)
+  --moving_delay MOVING_DELAY
+                        Moving delay (milliseconds) (default: 2000)
+  --warmup_delay WARMUP_DELAY
+                        Executor warming up delay (milliseconds) (default:
+                        1000)
+  --diff_reward_enabled DIFF_REWARD_ENABLED
+                        Enable differential reward (default: 0)
+  --new_dag_interval NEW_DAG_INTERVAL
+                        new DAG arrival interval (default: 10000 milliseconds)
+  --new_dag_interval_noise NEW_DAG_INTERVAL_NOISE
+                        new DAG arrival interval noise (default: 1000
+                        milliseconds)
+  --exec_group_num EXEC_GROUP_NUM [EXEC_GROUP_NUM ...]
+                        Number of executors in each type group (default: [50,
+                        50])
+  --exec_cpus EXEC_CPUS [EXEC_CPUS ...]
+                        Amount of CPU in each type group (default: [1.0, 1.0])
+  --exec_mems EXEC_MEMS [EXEC_MEMS ...]
+                        Amount of memory in each type group (default: [1.0,
+                        0.5])
+  --test_schemes TEST_SCHEMES [TEST_SCHEMES ...]
+                        Schemes for testing the performance
+  --tpch_size TPCH_SIZE [TPCH_SIZE ...]
+                        Numer of TPCH queries (default: [2g, 5g, 10g, 20g,
+                        50g, 80g, 100g])
+  --tpch_num TPCH_NUM   Numer of TPCH queries (default: 22)
+  --canvs_visualization CANVS_VISUALIZATION
+                        Enable canvs visualization (default: 1)
+  --canvas_base CANVAS_BASE
+                        Canvas color scale bottom (default: -10)
+  --node_input_dim NODE_INPUT_DIM
+                        node input dimensions to graph embedding (default: 5)
+  --job_input_dim JOB_INPUT_DIM
+                        job input dimensions to graph embedding (default: 3)
+  --hid_dims HID_DIMS [HID_DIMS ...]
+                        hidden dimensions throughout graph embedding (default:
+                        [16, 8])
+  --output_dim OUTPUT_DIM
+                        output dimensions throughout graph embedding (default:
+                        8)
+  --max_depth MAX_DEPTH
+                        Maximum depth of root-leaf message passing (default:
+                        8)
+  --lr LR               learning rate (default: 0.001)
+  --ba_size BA_SIZE     Batch size (default: 64)
+  --gamma GAMMA         discount factor (default: 1)
+  --early_terminate EARLY_TERMINATE
+                        Terminate the episode when stream is empty (default:
+                        0)
+  --entropy_weight_init ENTROPY_WEIGHT_INIT
+                        Initial exploration entropy weight (default: 1)
+  --entropy_weight_min ENTROPY_WEIGHT_MIN
+                        Final minimum entropy weight (default: 0.0001)
+  --entropy_weight_decay ENTROPY_WEIGHT_DECAY
+                        Entropy weight decay rate (default: 1e-3)
+  --log_file_name LOG_FILE_NAME
+                        log file name (default: log)
+  --master_num_gpu MASTER_NUM_GPU
+                        Number of GPU cores used in master (default: 0)
+  --worker_num_gpu WORKER_NUM_GPU
+                        Number of GPU cores used in worker (default: 0)
+  --master_gpu_fraction MASTER_GPU_FRACTION
+                        Fraction of memory master uses in GPU (default: 0.5)
+  --worker_gpu_fraction WORKER_GPU_FRACTION
+                        Fraction of memory worker uses in GPU (default: 0.1)
+  --average_reward_storage_size AVERAGE_REWARD_STORAGE_SIZE
+                        Storage size for computing average reward (default:
+                        100000)
+  --reset_prob RESET_PROB
+                        Probability for episode to reset (after x seconds)
+                        (default: 0)
+  --reset_prob_decay RESET_PROB_DECAY
+                        Decay rate of reset probability (default: 0)
+  --reset_prob_min RESET_PROB_MIN
+                        Minimum of decay probability (default: 0)
+  --num_agents NUM_AGENTS
+                        Number of parallel agents (default: 16)
+  --num_ep NUM_EP       Number of training epochs (default: 10000000)
+  --learn_obj LEARN_OBJ
+                        Learning objective (default: mean)
+  --saved_model SAVED_MODEL
+                        Path to the saved tf model (default: None)
+  --check_interval CHECK_INTERVAL
+                        interval for master to check gradient report (default:
+                        10ms)
+  --model_save_interval MODEL_SAVE_INTERVAL
+                        Interval for saving Tensorflow model (default: 1000)
+  --num_saved_models NUM_SAVED_MODELS
+                        Number of models to keep (default: 1000)
+  --scheduler_type SCHEDULER_TYPE
+                        type of scheduling algorithm (default:
+                        dynamic_partition)

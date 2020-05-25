@@ -1,0 +1,11 @@
+job_id,num_gpu,submit_time,iterations,model_name,duration,interval,multi_gpu,packing
+1,16,0,133,vgg11,147,132,horovod,8
+5,16,132,288,inception3,138,231,horovod,4
+13,16,363,581,resnet50,196,317,horovod,1
+23,16,680,168,resnet152,121,113,horovod,4
+27,16,793,109,vgg19,121,151,horovod,8
+32,16,944,237,resnet101,125,64,horovod,1
+34,16,1008,2178,googlenet,305,406,horovod,4
+47,16,1414,272,alexnet,121,33,horovod,8
+48,16,1447,147,inception4,126,229,horovod,1
+55,16,1676,126,vgg16,135,229,horovod,4
