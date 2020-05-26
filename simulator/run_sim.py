@@ -102,7 +102,6 @@ CLUSTER = cluster.CLUSTER
 #get LOG object
 LOG = log.LOG
 
-
 class Environment(object):
     def __init__(self):
         # isolated random number generator

@@ -168,7 +168,6 @@ class ActorAgent(Agent):
                       gsn_summ_backward_map, act_fn):
 
         # takes output from graph embedding and raw_input from environment
-
         batch_size = tf.shape(node_valid_mask)[0]
 
         # (1) reshape node inputs to batch format
