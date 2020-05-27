@@ -6,19 +6,17 @@ import subprocess
 import csv
 import math
 
-import util
-import flags 
-import cluster 
-import jobs
+import simulator.util
+import simulator.flags 
+import simulator.cluster 
+import simulator.jobs
 
-FLAGS = flags.FLAGS
-CLUSTER = cluster.CLUSTER
-JOBS = jobs.JOBS
-
+FLAGS = simulator.flags.FLAGS
+CLUSTER = simulator.cluster.CLUSTER
+JOBS = simulator.jobs.JOBS
 
 
 class _Log(object):
-
     def __init__(self):
         self.log_path = ''
         self.log_file = ''

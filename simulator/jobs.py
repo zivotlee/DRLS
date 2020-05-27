@@ -14,8 +14,8 @@ ERROR
 '''
 import numpy
 import math
-import util
-import models
+import simulator.util
+import simulator.models
 import csv
 import time
 import sys
@@ -26,8 +26,8 @@ import sys
 
 # #get host info
 # CLUSTER = cluster.CLUSTER
-import flags
-FLAGS = flags.FLAGS
+import simulator.flags
+FLAGS = simulator.flags.FLAGS
 
 class _TFJobs(object):
 

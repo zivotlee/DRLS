@@ -1,8 +1,8 @@
 from __future__ import print_function
 import sys
 import subprocess
-import flags 
-FLAGS = flags.FLAGS
+import simulator.flags 
+FLAGS = simulator.flags.FLAGS
 
 def print_fn(log):
     if FLAGS.print:

@@ -3,19 +3,18 @@ from __future__ import division
 from __future__ import print_function
 import math
 import random
-from switch import _Switch
-from node import _Node
-import util
-import flags 
+from simulator.switch import _Switch
+from simulator.node import _Node
+import simulator.util
+import simulator.flags 
 # import jobs
 # import log
 
 # JOBS = jobs.JOBS
 # LOG = log.LOG
-FLAGS = flags.FLAGS
+FLAGS = simulator.flags.FLAGS
 
-class _Cluster(object):
-
+class Cluster(object):
     def __init__(self, num_switch=0, num_node_p_switch=0, num_gpu_p_node=0, num_cpu_p_node=0, mem_p_node=0):
         ''' Init GPU cluster with basic switch, node, gpu information'''
         self.num_switch =  num_switch
@@ -1744,11 +1743,3 @@ class _Cluster(object):
         job['status'] = 'END'
         util.print_fn('**** job[%d] completed' % job['job_idx'])
         return True
-
-
-CLUSTER = _Cluster()
-
-
-_allowed_symbols = [
-    'CLUSTER'
-]

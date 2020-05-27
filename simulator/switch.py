@@ -3,14 +3,14 @@ from __future__ import division
 from __future__ import print_function
 
 
-from node import _Node
-import flags 
-import util
-import jobs
+from simulator.node import _Node
+import simulator.flags 
+import simulator.util
+import simulator.jobs
 import math
 
-FLAGS = flags.FLAGS
-JOBS = jobs.JOBS
+FLAGS = simulator.flags.FLAGS
+JOBS = simulator.jobs.JOBS
 
 
 class _Switch(object):

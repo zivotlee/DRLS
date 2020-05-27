@@ -54,15 +54,15 @@ from cplex.exceptions import CplexError
 from cplex.six.moves import range
 '''
 
-import util
-import flags 
-import jobs
-import cluster
-import switch
-import node
-FLAGS = flags.FLAGS
-CLUSTER = cluster.CLUSTER
-JOBS = jobs.JOBS
+import simulator.util
+import simulator.flags 
+import simulator.jobs
+import simulator.cluster
+import simulator.switch
+import simulator.node
+FLAGS = simulator.flags.FLAGS
+CLUSTER = simulator.cluster.CLUSTER
+JOBS = simulator.jobs.JOBS
 
 
 '''

@@ -1,13 +1,13 @@
 import os
 # os.environ['CUDA_VISIBLE_DEVICES']=''
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+os.environ['TF_CPP_MIN_LOG_LEVEL']='1'
 import time
 import numpy as np
 import tensorflow as tf
 import multiprocessing as mp
 from param import *
 from utils import *
-from spark_env.env import Environment
+from simulator.run_sim import Environment
 from average_reward import *
 from compute_baselines import *
 from compute_gradients import *

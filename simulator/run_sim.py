@@ -10,12 +10,12 @@ import argparse
 import copy
 import os
 
-import util
-import flags
-import jobs
-import cluster
-import log
-import lp
+from simulator.util import *
+from simulator.flags import *
+from simulator.jobs import *
+from simulator.cluster import *
+from simulator.log import *
+from simulator.lp import *
 
 import numpy as np
 import copy
@@ -24,42 +24,52 @@ from param import *
 from utils import *
 from simulator.wall_time import WallTime
 from simulator.reward_calculator import RewardCalculator
+from simulator.action_map import compute_act_map, get_frontier_acts
+from simulator.reward_calculator import RewardCalculator
+from simulator.moving_executors import MovingExecutors
+from simulator.executor_commit import ExecutorCommit
+from simulator.free_executors import FreeExecutors
+from simulator.job_generator import generate_jobs
+from simulator.timeline import Timeline
+from simulator.executor import Executor
+from simulator.job_dag import JobDAG
+from simulator.task import Task
 
 # import hosts
 # import placement_scheme as scheme
 # import cmd
 
 #parse input arguments
-flags.DEFINE_string('trace_file', 'tf_job.csv',
-                '''Provide TF job trace file (*.csv, *.txt).
-                    *.csv file, use \',\' as delimiter; *.txt file, user \' \' as deliminter. 
-                    Default file is tf_job.csv ''')
-flags.DEFINE_string('log_path', 'result-' + time.strftime("%Y%m%d-%H-%M-%S", time.localtime()),
+# simulator.flags.DEFINE_string('trace_file', 'tf_job.csv',
+#                 '''Provide TF job trace file (*.csv, *.txt).
+#                     *.csv file, use \',\' as delimiter; *.txt file, user \' \' as deliminter. 
+#                     Default file is tf_job.csv ''')
+simulator.flags.DEFINE_string('log_path', 'result-' + time.strftime("%Y%m%d-%H-%M-%S", time.localtime()),
                 '''Simulation output folder, including cluster/node/gpu usage trace, pending job_queue info.
                 Default folder is result-[time]''')
-flags.DEFINE_string('scheme', 'yarn',
-                '''
-                Job placement scheme:
-                0.count, just resource counting, without assignment (which gpu, which cpu)
-                1.yarn, ms yarn
-                2.random
-                3.crandom (consolidate + random)
-                4.greedy
-                5.balance
-                6.cbalance (consolidate + balance)
-                Default is yarn''')
-flags.DEFINE_string('schedule', 'fifo',
-                '''
-                Job schedule scheme:
-                1.fifo
-                2.fjf, fit job first( in fifo order)
-                3.sjf, smallest job first
-                4.lpjf, longest pending job first
-                5.shortest, shortest-remaining-time job first
-                6.shortest-gpu, shortest-remaining-gputime job first 
-                7.dlas, discretized las 
-                8.dlas-gpu, dlas using gpu time
-                Default is fifo''')
+# simulator.flags.DEFINE_string('scheme', 'yarn',
+#                 '''
+#                 Job placement scheme:
+#                 0.count, just resource counting, without assignment (which gpu, which cpu)
+#                 1.yarn, ms yarn
+#                 2.random
+#                 3.crandom (consolidate + random)
+#                 4.greedy
+#                 5.balance
+#                 6.cbalance (consolidate + balance)
+#                 Default is yarn''')
+# simulator.flags.DEFINE_string('schedule', 'fifo',
+#                 '''
+#                 Job schedule scheme:
+#                 1.fifo
+#                 2.fjf, fit job first( in fifo order)
+#                 3.sjf, smallest job first
+#                 4.lpjf, longest pending job first
+#                 5.shortest, shortest-remaining-time job first
+#                 6.shortest-gpu, shortest-remaining-gputime job first 
+#                 7.dlas, discretized las 
+#                 8.dlas-gpu, dlas using gpu time
+#                 Default is fifo''')
 # flags.DEFINE_string('scheme', 'random',
 #                 ''' TF job placement scheme (PS, and workers). 
 #                     Schemes:
@@ -67,40 +77,40 @@ flags.DEFINE_string('schedule', 'fifo',
 #                         2.none: all jobs have the same placement (e.g. every ps0 on Node1)
 #                         3.half_random: for each job, still one ps/worker per machine, placements are random
 #                     Default scheme is random ''')
-flags.DEFINE_integer('num_switch', 1, 
-                '''Part of cluster spec: the number of switches in this cluster, default is 1''')
-flags.DEFINE_integer('num_node_p_switch', 32, 
-                '''Part of cluster spec: the number of nodes under a single switch, default is 32''')
-flags.DEFINE_integer('num_gpu_p_node', 8, 
-                '''Part of cluster spec: the number of gpus on each node, default is 8''')
-flags.DEFINE_integer('num_cpu_p_node', 64,
-                '''Part of cluster spec: the number of cpus on each node, default is 64''')
-flags.DEFINE_integer('mem_p_node', 256,
-                '''Part of cluster spec: memory capacity on each node, default is 128''')
-flags.DEFINE_string('cluster_spec', None,
-                '''Part of cluster spec: cluster infra spec file, 
-                this file will overwrite the specs from num_switch, num_node_p_switch, and num_gpu_p_node
-                Spec format:
-                    num_switch,num_node_p_switch,num_gpu_p_node
-                    int,int,int''')
+# simulator.flags.DEFINE_integer('num_switch', 1, 
+#                 '''Part of cluster spec: the number of switches in this cluster, default is 1''')
+# simulator.flags.DEFINE_integer('num_node_p_switch', 32, 
+#                 '''Part of cluster spec: the number of nodes under a single switch, default is 32''')
+# simulator.flags.DEFINE_integer('num_gpu_p_node', 8, 
+#                 '''Part of cluster spec: the number of gpus on each node, default is 8''')
+# simulator.flags.DEFINE_integer('num_cpu_p_node', 64,
+#                 '''Part of cluster spec: the number of cpus on each node, default is 64''')
+# simulator.flags.DEFINE_integer('mem_p_node', 256,
+#                 '''Part of cluster spec: memory capacity on each node, default is 128''')
+# simulator.flags.DEFINE_string('cluster_spec', None,
+#                 '''Part of cluster spec: cluster infra spec file, 
+#                 this file will overwrite the specs from num_switch, num_node_p_switch, and num_gpu_p_node
+#                 Spec format:
+#                     num_switch,num_node_p_switch,num_gpu_p_node
+#                     int,int,int''')
 
-flags.DEFINE_boolean('print', False, 
+simulator.flags.DEFINE_boolean('print', False, 
                 '''Enable print out information, default is False''')
-flags.DEFINE_boolean('flush_stdout', True, 
+simulator.flags.DEFINE_boolean('flush_stdout', True, 
                 '''Flush stdout, default is True''')
-flags.DEFINE_version('0.1')
+simulator.flags.DEFINE_version('0.1')
 
 
-FLAGS = flags.FLAGS
+FLAGS = simulator.flags.FLAGS
 
 #prepare JOBS list
-JOBS = jobs.JOBS
+JOBS = simulator.jobs.JOBS
 
-#get host info
-CLUSTER = cluster.CLUSTER
+# #get host info
+# CLUSTER = simulator.cluster.CLUSTER
 
 #get LOG object
-LOG = log.LOG
+LOG = simulator.log.LOG
 
 class Environment(object):
     def __init__(self):
@@ -109,6 +119,12 @@ class Environment(object):
 
         # global timer
         self.wall_time = WallTime()
+
+        # cluster spec
+        self.cluster = Cluster()
+
+        # parse gpu cluster spec
+        self.parse_cluster_spec()
 
         # # uses priority queue
         # self.timeline = Timeline()
@@ -127,8 +143,8 @@ class Environment(object):
         # # executor commit
         # self.exec_commit = ExecutorCommit()
 
-        # prevent agent keeps selecting the same node
-        self.node_selected = set()
+        # # prevent agent keeps selecting the same node
+        # self.node_selected = set()
 
         # for computing reward at each step
         self.reward_calculator = RewardCalculator()
@@ -164,9 +180,9 @@ class Environment(object):
         fd.close()
 
     def parse_cluster_spec():
-        if FLAGS.cluster_spec:
-            print(FLAGS.cluster_spec)
-            spec_file = FLAGS.cluster_spec
+        if args.cluster_spec:
+            spec_file = args.cluster_spec
+            print(spec_file)
             fd = open(spec_file, 'r')
             deli = ','
             if ((spec_file.find('.csv') == (len(spec_file) - 4))):
@@ -175,7 +191,7 @@ class Environment(object):
                 deli = ' '
             reader = csv.DictReader(fd, delimiter = deli) 
             keys = reader.fieldnames
-            util.print_fn(keys)
+            print_fn(keys)
             if 'num_switch' not in keys:
                 return
             if 'num_node_p_switch' not in keys:
@@ -193,23 +209,23 @@ class Environment(object):
             ''' get cluster spec '''
             for row in reader:
                 # util.print_fn('num_switch %s' % row['num_switch'])
-                FLAGS.num_switch = int(row['num_switch'])
-                FLAGS.num_node_p_switch = int(row['num_node_p_switch'])
-                FLAGS.num_gpu_p_node = int(row['num_gpu_p_node'])
-                FLAGS.num_cpu_p_node = int(row['num_cpu_p_node'])
-                FLAGS.mem_p_node = int(row['mem_p_node'])
+                args.num_switch = int(row['num_switch'])
+                args.num_node_p_switch = int(row['num_node_p_switch'])
+                args.num_gpu_p_node = int(row['num_gpu_p_node'])
+                args.num_cpu_p_node = int(row['num_cpu_p_node'])
+                args.mem_p_node = int(row['mem_p_node'])
             fd.close()
 
-        util.print_fn("num_switch: %d" % FLAGS.num_switch)
-        util.print_fn("num_node_p_switch: %d" % FLAGS.num_node_p_switch)
-        util.print_fn("num_gpu_p_node: %d" % FLAGS.num_gpu_p_node)
-        util.print_fn("num_cpu_p_node: %d" % FLAGS.num_cpu_p_node)
-        util.print_fn("mem_p_node: %d" % FLAGS.mem_p_node)
+        print_fn("num_switch: %d" % args.num_switch)
+        print_fn("num_node_p_switch: %d" % args.num_node_p_switch)
+        print_fn("num_gpu_p_node: %d" % args.num_gpu_p_node)
+        print_fn("num_cpu_p_node: %d" % args.num_cpu_p_node)
+        print_fn("mem_p_node: %d" % args.mem_p_node)
 
         '''init infra'''
-        CLUSTER.init_infra()
+        self.cluster.init_infra()        
         # util.print_fn(lp.prepare_cluster_info())
-        util.print_fn('--------------------------------- End of cluster spec ---------------------------------')
+        print_fn('--------------------------------- End of cluster spec ---------------------------------')
         return 
 
 
