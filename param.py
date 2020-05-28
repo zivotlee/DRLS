@@ -146,23 +146,25 @@ parser.add_argument('--scheduler_type', type=str, default='dynamic_partition',
 
 # -- Cluster environment --
 parser.add_argument('--trace_file', type=str, default='tf_job.csv',
-                    help='Provide TF job trace file (*.csv, *.txt) (default: tf_job.csv)' )
+                    help='Provide TF job trace file (*.csv, *.txt) (default: tf_job.csv)')
 parser.add_argument('--scheme', type=str, default='yarn',
-                    help='Job placement scheme: (default: yarn)' )
+                    help='Job placement scheme: (default: yarn)')
 parser.add_argument('--schedule', type=str, default='fifo',
-                    help='Job schedule scheme: (default: fifo)' )
+                    help='Job schedule scheme: (default: fifo)')
 parser.add_argument('--cluster_spec', type=str, default=None,
                     help='Part of cluster spec: cluster infra spec file, \
-                    this file will overwrite the specs from num_switch, num_node_p_switch, and num_gpu_p_node (default: None)' )                    
+                    this file will overwrite the specs from num_switch, num_node_p_switch, and num_gpu_p_node (default: None)')                    
 parser.add_argument('--num_switch', type=int, default=1,
-                    help='Part of cluster spec: the number of switches in this cluster (default: 1)' )
+                    help='Part of cluster spec: the number of switches in this cluster (default: 1)')
 parser.add_argument('--num_node_p_switch', type=int, default=32,
-                    help='Part of cluster spec: the number of nodes under a single switch (default: 32)' )
+                    help='Part of cluster spec: the number of nodes under a single switch (default: 32)')
 parser.add_argument('--num_gpu_p_node', type=int, default=8,
-                    help='Part of cluster spec: the number of gpus on each node (default: 8)' )                    
+                    help='Part of cluster spec: the number of gpus on each node (default: 8)')                    
 parser.add_argument('--num_cpu_p_node', type=int, default=64,
-                    help='Part of cluster spec: the number of cpus on each node (default: 64)' )
+                    help='Part of cluster spec: the number of cpus on each node (default: 64)')
 parser.add_argument('--mem_p_node', type=int, default=256,
-                    help='Part of cluster spec: memory capacity on each node (default: 256)' )
+                    help='Part of cluster spec: memory capacity on each node (default: 256)')
+parser.add_argument('--cluster_folder', type=str, default='./simulator/cluster/',
+                    help='cluster spec folder path (default: ./simulator/cluster/)')                    
 
 args = parser.parse_args()

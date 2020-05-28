@@ -5,7 +5,8 @@ import math
 import random
 from simulator.switch import _Switch
 from simulator.node import _Node
-import simulator.util
+from param import *
+from simulator.util import *
 import simulator.flags 
 # import jobs
 # import log
@@ -77,7 +78,7 @@ class Cluster(object):
         '''
         if num_switch == 0 and num_node_p_switch == 0 and num_gpu_p_node == 0 and num_cpu_p_node == 0 and mem_p_node == 0:
             #no new spec, apply FLAGS spec info
-            self.set_spec(FLAGS.num_switch, FLAGS.num_node_p_switch, FLAGS.num_gpu_p_node, FLAGS.num_cpu_p_node, FLAGS.mem_p_node)
+            self.set_spec(args.num_switch, args.num_node_p_switch, args.num_gpu_p_node, args.num_cpu_p_node, args.mem_p_node)
         else:
             self.set_spec(num_switch, num_node_p_switch, num_gpu_p_node, num_cpu_p_node, mem_p_node)
 
@@ -87,7 +88,7 @@ class Cluster(object):
             tmp_s.add_nodes(self.num_node_p_switch, self.num_gpu_p_node, self.num_cpu_p_node, self.mem_p_node)
             self.switch_list.append(tmp_s)
 
-        util.print_fn('Cluster is ready to use')
+        print_fn('Cluster is ready to use')
         self.print_cluster_spec()
 
     def empty_infra(self):
@@ -1743,3 +1744,9 @@ class Cluster(object):
         job['status'] = 'END'
         util.print_fn('**** job[%d] completed' % job['job_idx'])
         return True
+
+CLUSTER = Cluster()
+
+_allowed_symbols = [
+    'CLUSTER'
+]

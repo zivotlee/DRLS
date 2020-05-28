@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import simulator.util
+from simulator.util import *
 
 '''
 TODO: add cpu and network load support in class _Node
@@ -26,7 +26,7 @@ class _Node(object):
         self.job_gpu = 0
         self.num_jobs = 0
 
-        util.print_fn('    Node[%d] has %d gpus, %d cpus, %d G memory' % (id, num_gpu, num_cpu, mem))
+        print_fn('    Node[%d] has %d gpus, %d cpus, %d G memory' % (id, num_gpu, num_cpu, mem))
     
     def init_node(self, num_gpu=0, num_cpu=0, mem=0):
         if num_gpu != 0:

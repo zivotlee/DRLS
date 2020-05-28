@@ -5,7 +5,7 @@ from __future__ import print_function
 
 from simulator.node import _Node
 import simulator.flags 
-import simulator.util
+from simulator.util import *
 import simulator.jobs
 import math
 
@@ -14,7 +14,6 @@ JOBS = simulator.jobs.JOBS
 
 
 class _Switch(object):
-
     def __init__(self, id, num_node=0, num_gpu_p_node=0, num_cpu_p_node=0, mem_p_node=0):
         self.num_node = num_node
         self.num_gpu_p_node = num_gpu_p_node
@@ -22,7 +21,7 @@ class _Switch(object):
         self.mem_p_node = mem_p_node
         self.id = id
         self.node_list = list()
-        util.print_fn('  Switch[%d] has %d nodes' % (id, num_node))
+        print_fn('  Switch[%d] has %d nodes' % (id, num_node))
 
     def add_nodes(self, num_node=0, num_gpu_p_node=0, num_cpu_p_node=0, mem_p_node=0):
         if num_node != 0 and num_gpu_p_node != 0 and num_cpu_p_node != 0 and mem_p_node != 0:

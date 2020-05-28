@@ -8,11 +8,11 @@ import math
 
 import simulator.util
 import simulator.flags 
-import simulator.cluster 
+from simulator.cluster import *
 import simulator.jobs
 
 FLAGS = simulator.flags.FLAGS
-CLUSTER = simulator.cluster.CLUSTER
+# CLUSTER = simulator.cluster.CLUSTER
 JOBS = simulator.jobs.JOBS
 
 
@@ -31,6 +31,7 @@ class _Log(object):
         self.network_list = list()
         self.job_list = list()
         self.mem_list = list()
+        self.cluster = Cluster()
 
     def init_log(self):
         self.log_path = FLAGS.log_path
@@ -72,7 +73,7 @@ class _Log(object):
         if FLAGS.scheme != 'count':
             fd = open(self.log_cpu, 'w+')
             log_writer = csv.writer(fd)  
-            log_writer.writerow(['time'] + ['cpu'+str(i) for i in range(CLUSTER.num_node)])
+            log_writer.writerow(['time'] + ['cpu'+str(i) for i in range(self.cluster.num_node)])
             ''''if combine all the info together
             log_writer.writerow(['cpu'+str(i) for i in range(CLUSTER.num_node)] 
                                 + ['gpu'+str(i) for i in range(CLUSTER.num_node)] 
@@ -81,7 +82,7 @@ class _Log(object):
             fd.close()
             fd = open(self.log_gpu, 'w+')
             log_writer = csv.writer(fd)  
-            log_writer.writerow(['time'] + ['gpu'+str(i) for i in range(CLUSTER.num_node)])
+            log_writer.writerow(['time'] + ['gpu'+str(i) for i in range(self.cluster.num_node)])
             fd.close()
             fd = open(self.log_network, 'w+')
             log_writer = csv.writer(fd)  
@@ -150,7 +151,7 @@ class _Log(object):
             del self.mem_list[:]
 
     def gandiva_checkpoint(self, event_time, idle_node, busy_gpu, frag_gpu, pending_job, running_job, len_g1, len_g2, len_g4, len_g8, len_g16, len_g32, len_g64):
-        busy_node = CLUSTER.num_node - idle_node
+        busy_node = self.cluster.num_node - idle_node
         full_node = 0
         idle_gpu = frag_gpu
         completed_job = len(JOBS.completed_jobs)
@@ -191,7 +192,7 @@ class _Log(object):
             mem = list()
             mem_result = list()
             # mem.append(event_time)
-            for switch in CLUSTER.switch_list:
+            for switch in self.cluster.switch_list:
                 for node in switch.node_list:
                     free_gpu = node.check_free_gpus()
                     #updage gpu
@@ -247,18 +248,18 @@ class _Log(object):
 
         else:
             if FLAGS.schedule == 'dlas-gpu-pack':
-                for gpu in CLUSTER.gpu_list:
+                for gpu in self.cluster.gpu_list:
                     if gpu == 1:
                         idle_gpu = idle_gpu + 1
                     else:
                         busy_gpu = busy_gpu + 1
             else:
-                idle_gpu = CLUSTER.free_gpu
-                busy_gpu = CLUSTER.num_gpu - CLUSTER.free_gpu
+                idle_gpu = self.cluster.free_gpu
+                busy_gpu = self.cluster.num_gpu - self.cluster.free_gpu
 
-            busy_node = int(math.ceil(busy_gpu / CLUSTER.num_gpu_p_node))
+            busy_node = int(math.ceil(busy_gpu / self.cluster.num_gpu_p_node))
             full_node = busy_node
-            idle_node = int(CLUSTER.num_node - busy_node)
+            idle_node = int(self.cluster.num_node - busy_node)
 
         for job in JOBS.job_list:
             if job['status'] == 'RUNNING':
@@ -311,11 +312,11 @@ class _Log(object):
         for num_gpu, gjob in JOBS.gpu_job.items():
             idle_gpu += gjob.free_gpu
 
-        busy_gpu = CLUSTER.num_gpu - idle_gpu
+        busy_gpu = self.cluster.num_gpu - idle_gpu
 
-        busy_node = int(math.ceil(busy_gpu / CLUSTER.num_gpu_p_node))
+        busy_node = int(math.ceil(busy_gpu / self.cluster.num_gpu_p_node))
         full_node = busy_node
-        idle_node = int(CLUSTER.num_node - busy_node)
+        idle_node = int(self.cluster.num_node - busy_node)
 
         for job in JOBS.job_list:
             if job['status'] == 'RUNNING':

@@ -126,8 +126,8 @@ class Environment(object):
         # parse gpu cluster spec
         self.parse_cluster_spec()
 
-        # # uses priority queue
-        # self.timeline = Timeline()
+        # uses priority queue
+        self.timeline = Timeline()
 
         # # executors
         # self.executors = OrderedSet()
@@ -148,6 +148,38 @@ class Environment(object):
 
         # for computing reward at each step
         self.reward_calculator = RewardCalculator()
+
+    def seed(self, seed):
+        self.np_random.seed(seed)    
+
+    def reset(self, max_time=np.inf):
+        self.max_time = max_time
+        self.wall_time.reset()
+        self.timeline.reset()
+        # self.exec_commit.reset()
+        # self.moving_executors.reset()
+        self.reward_calculator.reset()
+        self.finished_job_dags = OrderedSet()
+
+        # # self.node_selected.clear()
+        # for executor in self.executors:
+        #     executor.reset()            
+        # self.free_executors.reset(self.executors)
+
+        # generate a set of new jobs
+        self.job_dags = generate_jobs(self.np_random, self.timeline, self.wall_time)
+        
+        # map action to dag_idx and node_idx
+        self.action_map = compute_act_map(self.job_dags)
+        
+        # add initial set of jobs in the system
+        for job_dag in self.job_dags:
+            self.add_job(job_dag)
+        
+        # put all executors as source executors initially
+        self.source_job = None
+        self.num_source_exec = len(self.executors)
+        self.exec_to_schedule = OrderedSet(self.executors)
 
     def parse_job_file(trace_file):
         #check trace_file is *.csv
@@ -179,11 +211,11 @@ class Environment(object):
         # JOBS.read_all_jobs()
         fd.close()
 
-    def parse_cluster_spec():
+    def parse_cluster_spec(self):
         if args.cluster_spec:
             spec_file = args.cluster_spec
             print(spec_file)
-            fd = open(spec_file, 'r')
+            fd = open(args.cluster_folder + spec_file, 'r')
             deli = ','
             if ((spec_file.find('.csv') == (len(spec_file) - 4))):
                 deli = ','
