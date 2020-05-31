@@ -1,9 +1,13 @@
 import os
+import csv
+
 from param import *
 from utils import *
 from spark_env.task import *
 from spark_env.node import *
 from spark_env.job_dag import *
+from simulator.jobs import *
+from simulator.util import *
 
 
 def load_job(file_path, query_size, query_idx, wall_time, np_random):
@@ -152,3 +156,76 @@ def generate_jobs(np_random, timeline, wall_time):
         exit(1)
 
     return job_dags
+
+def parse_job_file(np_random, timeline, wall_time):
+    trace_file = args.trace_file
+    #check trace_file is *.csv
+    fd = open(args.trace_folder + trace_file, 'r')
+    deli = ','
+    if ((trace_file.find('.csv') == (len(trace_file) - 4))):
+        deli = ','
+    elif ((trace_file.find('.txt') == (len(trace_file) - 4))):
+        deli = ' '
+
+    reader = csv.DictReader(fd, delimiter = deli) 
+
+    # Add job from job trace file
+    keys = reader.fieldnames
+    print_fn('--------------------------------- Read TF jobs from: %s ---------------------------------' % trace_file) 
+    print_fn('    we get the following fields:\n        %s' % keys)
+
+    jobs = TFJobs()
+    job_idx = 0
+    for row in reader:
+        # #add job into JOBS
+        # JOBS.add_job(row)
+        jobs.add_job(row)
+
+        # JOBS.read_job_info(job_idx, 'num_gpu')
+        job_idx += 1
+
+    assert job_idx == len(jobs.job_list) 
+    assert jobs.num_job == len(jobs.job_list) 
+
+    fd.close()
+
+    # JOBS.print_all_job_size_info()
+    jobs.sort_all_jobs()
+
+    # print(lp.prepare_job_info(JOBS.job_list[0]))
+    print_fn('---------------------------------- Get %d TF jobs in total ----------------------------------' % job_idx)
+    # JOBS.read_all_jobs()    
+
+    prepare_job_start_events(jobs)
+
+    return jobs
+
+def prepare_job_start_events(jobs):
+        '''
+        add job start events into job_events list
+        end events should be added when they are starting
+        '''
+        for job in jobs.job_list:
+            start_t = job['submit_time']
+            # util.print_fn('%d, %d' % (start_t, end_t))
+
+            #for job start
+            tmp_dict = search_dict_list(jobs.job_events, 'time', start_t)
+            if tmp_dict == None:
+                #not found, add the time into to job_events
+                tmp_dict = dict()
+                tmp_dict['time'] = start_t
+                tmp_dict['start_jobs'] = list()
+                tmp_dict['end_jobs'] = list()
+                tmp_dict['start_jobs'].append(job)
+                jobs.job_events.append(tmp_dict)
+            else:
+                tmp_dict['start_jobs'].append(job)
+
+
+            job['status'] = 'EVENT' #job has been in EVENT status
+
+        ''' sort events based on their time'''
+        jobs.job_events.sort(key = lambda e:e.__getitem__('time'))
+        print_fn('Init, add job start events')
+        jobs.print_job_events()

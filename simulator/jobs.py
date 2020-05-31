@@ -14,8 +14,8 @@ ERROR
 '''
 import numpy
 import math
-import simulator.util
-import simulator.models
+from simulator.util import *
+from simulator.models import *
 import csv
 import time
 import sys
@@ -29,7 +29,7 @@ import sys
 import simulator.flags
 FLAGS = simulator.flags.FLAGS
 
-class _TFJobs(object):
+class TFJobs(object):
 
     '''
     nested-class g_job
@@ -58,7 +58,7 @@ class _TFJobs(object):
 
         def release_job_gpu(self, num_job=1):
             if num_job < 0:
-                util.print_fn("Error: num_job < 0")
+                print_fn("Error: num_job < 0")
                 exit()
             self.free_gpu += int(self.num_gpu * num_job)
 
@@ -121,18 +121,18 @@ class _TFJobs(object):
     def get_job_model(self, job_dict):
         # if job_dict.has_key('model_name') and job_dict.has_key('model_scale'):
         if ('model_name' in job_dict) and ('model_scale' in job_dict):
-            job_dict['model'] = models.get_model_with_scale(job_dict['model_name'], job_dict['model_scale'])
+            job_dict['model'] = get_model_with_scale(job_dict['model_name'], job_dict['model_scale'])
         else:
-            util.print_fn('Not enough model information to get the details')
+            print_fn('Not enough model information to get the details')
 
 
     def get_network_load(self, job_dict):
         if 'num_gpu' not in job_dict:
-            util.print_fn('No gpu information')
+            print_fn('No gpu information')
             return 
 
         if 'model' not in job_dict:
-            util.print_fn('No model information')
+            print_fn('No model information')
             return
         
         num_w = job_dict['num_gpu']
@@ -185,8 +185,8 @@ class _TFJobs(object):
         job_dict['duration'] = int(float(job_dict['duration']))
         # job_dict['duration'] = int(job_dict['duration'])
 
-        job_dict['rank'] = sys.maxint
-
+        # job_dict['rank'] = sys.maxint
+        job_dict['rank'] = sys.maxsize
         if 'start_time' not in job_dict:
             job_dict['start_time'] = 0
         if 'end_time' not in job_dict:
@@ -197,7 +197,7 @@ class _TFJobs(object):
         if 'submit_time' in job_dict:
             job_dict['r_submit_time'] = int(-1 * job_dict['submit_time'])
 
-        job_dict['start_time'] = sys.maxint
+        job_dict['start_time'] = sys.maxsize
         job_dict['end_time'] = 0
         job_dict['pending_time'] = 0
 
@@ -248,13 +248,13 @@ class _TFJobs(object):
         self.job_list.append(job_dict)
         self.num_job += 1
 
-        if FLAGS.schedule == 'multi-dlas-gpu':
-            num_gpu = job_dict['num_gpu']
-            if num_gpu not in self.gpu_job:
-                # add that job class
-                self.gpu_job[num_gpu] = self.g_job(num_gpu)
+        # if FLAGS.schedule == 'multi-dlas-gpu':
+        #     num_gpu = job_dict['num_gpu']
+        #     if num_gpu not in self.gpu_job:
+        #         # add that job class
+        #         self.gpu_job[num_gpu] = self.g_job(num_gpu)
 
-            self.gpu_job[num_gpu].total_job += 1   
+        #     self.gpu_job[num_gpu].total_job += 1   
 
 
     def print_all_job_size_info(self):
@@ -282,7 +282,7 @@ class _TFJobs(object):
         ps_w_writer = csv.writer(ps_w_fd)  
         ps_w_writer.writerow(['ps_w'])
 
-        util.print_fn("Start to dump job information")
+        print_fn("Start to dump job information")
         for job in self.job_list:
             if job['ps_ave'] != 0:
                 ps_max_ave_writer.writerow(list([job['ps_max_ave']]))
@@ -346,11 +346,11 @@ class _TFJobs(object):
         # self.job_list = tmp_list
 
         self.job_list.sort(key = lambda e:e.__getitem__('submit_time'))
-        util.print_fn('   Jobs are sorted with their start time')
-        # self.read_all_jobs()
-        if FLAGS.schedule == 'multi-dlas-gpu' and FLAGS.scheme == 'count':
-            for num_gpu, gjob in self.gpu_job.items():
-                util.print_fn('%d-GPU jobs have %d ' % (num_gpu, gjob.total_job))
+        print_fn('   Jobs are sorted with their start time')
+        # # self.read_all_jobs()
+        # if FLAGS.schedule == 'multi-dlas-gpu' and FLAGS.scheme == 'count':
+        #     for num_gpu, gjob in self.gpu_job.items():
+        #         print_fn('%d-GPU jobs have %d ' % (num_gpu, gjob.total_job))
 
     def create_multi_nodes_placement(self, job, switch_id, node_list):
         tmp_dict = dict() 
@@ -432,7 +432,7 @@ class _TFJobs(object):
         ''' job gets into the system: pending or running, and finally END'''
         #job not started yet
         job['status'] = 'PENDING'
-        job['start_time'] = sys.maxint
+        job['start_time'] = sys.maxsize
         job['last_start_time'] = 0
         job['last_check_time'] = job['submit_time']
         job['total_executed_time'] = 0 # total
@@ -474,16 +474,16 @@ class _TFJobs(object):
 
    
     def print_job_events(self):
-        util.print_fn('    Print all job events ')
+        print_fn('    Print all job events ')
         for event in self.job_events:
-            util.print_fn('      event.time[%d], with %d start_jobs, and %d end_jobs' % 
+            print_fn('      event.time[%d], with %d start_jobs, and %d end_jobs' % 
                             (event['time'], len(event['start_jobs']), len(event['end_jobs'])))
 
-        util.print_fn(' ')
+        print_fn(' ')
 
     def add_job_end_event(self, job):
         #for job end 
-        tmp_dict = util.search_dict_list(self.job_events, 'time', job['end_time'])
+        tmp_dict = search_dict_list(self.job_events, 'time', job['end_time'])
         if tmp_dict == None:
             #not found, add the time into to job_events
             tmp_dict = dict()
@@ -510,7 +510,7 @@ class _TFJobs(object):
             # util.print_fn('%d, %d' % (start_t, end_t))
 
             #for job start
-            tmp_dict = util.search_dict_list(self.job_events, 'time', start_t)
+            tmp_dict = search_dict_list(self.job_events, 'time', start_t)
             if tmp_dict == None:
                 #not found, add the time into to job_events
                 tmp_dict = dict()
@@ -527,7 +527,7 @@ class _TFJobs(object):
 
         ''' sort events based on their time'''
         self.job_events.sort(key = lambda e:e.__getitem__('time'))
-        util.print_fn('Init, add job start events')
+        print_fn('Init, add job start events')
         self.print_job_events()
 
 
@@ -574,7 +574,7 @@ class _TFJobs(object):
 
     def end_job(self, e_job):
         if FLAGS.schedule != 'multi-dlas-gpu':
-            util.print_fn("Not multi-dlas-gpu")
+            print_fn("Not multi-dlas-gpu")
             exit()
         
         num_gpu = e_job['num_gpu']
@@ -673,12 +673,12 @@ class _TFJobs(object):
                 exit()
 
 
-        util.print_fn(' %s is done' % sys._getframe().f_code.co_name)
+        print_fn(' %s is done' % sys._getframe().f_code.co_name)
 
     def completion_check(self):
         for num_gpu, gjob in self.gpu_job.items():
             if gjob.end_job != gjob.total_job:
-                util.print_fn('!!!! Miss-match %d completed jobs with %d total jobs in %d-GPU jobs' % (gjob.end_job, gjob.total_job, num_gpu))
+                print_fn('!!!! Miss-match %d completed jobs with %d total jobs in %d-GPU jobs' % (gjob.end_job, gjob.total_job, num_gpu))
 
     def test_reserve_gpus(self, total_num):
         for num_gpu, gjob in self.gpu_job.items():
@@ -696,7 +696,7 @@ class _TFJobs(object):
 
         self.reserve_gpus(total_num)
 
-JOBS = _TFJobs()
+JOBS = TFJobs()
 
 
 _allowed_symbols = [

@@ -166,5 +166,7 @@ parser.add_argument('--mem_p_node', type=int, default=256,
                     help='Part of cluster spec: memory capacity on each node (default: 256)')
 parser.add_argument('--cluster_folder', type=str, default='./simulator/cluster/',
                     help='cluster spec folder path (default: ./simulator/cluster/)')                    
+parser.add_argument('--trace_folder', type=str, default='./simulator/trace/',
+                    help='trace file folder path (default: ./simulator/trace/)')       
 
 args = parser.parse_args()

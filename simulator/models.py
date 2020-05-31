@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import random
-import simulator.util
+from simulator.util import *
 
 m_tensors = [[1.1,2.3,2.3,2.3,4.5,9.0,9.0,9.0,9.0,9.0,9.0,9.0,392.0,64.0,15.6],
 [1.1,2.3,2.3,4.5,9.0,9.0,9.0,9.0,9.0,392.0,64.0,15.6],
@@ -52,7 +52,7 @@ def get_model(model_name):
     else:
         # m_idx = random.randint(0,8)
         m_idx = 8
-        util.print_fn('No model match, pick %s' % m_names[m_idx])
+        print_fn('No model match, pick %s' % m_names[m_idx])
 
     ret = {'name':m_names[m_idx], 'ind':m_idx, 'tensors':m_tensors[m_idx], 'mem_util':m_mem[m_idx]}
     return ret

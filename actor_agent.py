@@ -340,6 +340,8 @@ class ActorAgent(Agent):
         frontier_nodes, executor_limits, \
         exec_commit, moving_executors, action_map = obs
 
+        jobs, cluster = obs
+
         # compute total number of nodes
         total_num_nodes = int(np.sum(job_dag.num_nodes for job_dag in job_dags))
 
@@ -351,9 +353,11 @@ class ActorAgent(Agent):
         exec_map = {}
         for job_dag in job_dags:
             exec_map[job_dag] = len(job_dag.executors)
+
         # count in moving executors
         for node in moving_executors.moving_executors.values():
             exec_map[node.job_dag] += 1
+            
         # count in executor commit
         for s in exec_commit.commit:
             if isinstance(s, JobDAG):

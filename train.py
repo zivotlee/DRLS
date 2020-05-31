@@ -8,6 +8,7 @@ import multiprocessing as mp
 from param import *
 from utils import *
 from simulator.run_sim import Environment
+# from spark_env.env import Environment
 from average_reward import *
 from compute_baselines import *
 from compute_gradients import *
@@ -16,14 +17,21 @@ from tf_logger import TFLogger
 
 
 def invoke_model(actor_agent, obs, exp):
-    # parse observation
-    job_dags, source_job, num_source_exec, \
-    frontier_nodes, executor_limits, \
-    exec_commit, moving_executors, action_map = obs
+    # # parse observation
+    # job_dags, source_job, num_source_exec, \
+    # frontier_nodes, executor_limits, \
+    # exec_commit, moving_executors, action_map = obs
 
-    if len(frontier_nodes) == 0:
+    # parse observation
+    jobs, cluster = obs
+
+    # if len(frontier_nodes) == 0:
+    #     # no action to take
+    #     return None, num_source_exec
+
+    if (len(jobs.job_events) + len(jobs.pending_jobs)) == 0:
         # no action to take
-        return None, num_source_exec
+        return None, 0
 
     # invoking the learning model
     node_act, job_act, \

@@ -29,7 +29,7 @@ from simulator.reward_calculator import RewardCalculator
 from simulator.moving_executors import MovingExecutors
 from simulator.executor_commit import ExecutorCommit
 from simulator.free_executors import FreeExecutors
-from simulator.job_generator import generate_jobs
+from simulator.job_generator import *
 from simulator.timeline import Timeline
 from simulator.executor import Executor
 from simulator.job_dag import JobDAG
@@ -40,60 +40,9 @@ from simulator.task import Task
 # import cmd
 
 #parse input arguments
-# simulator.flags.DEFINE_string('trace_file', 'tf_job.csv',
-#                 '''Provide TF job trace file (*.csv, *.txt).
-#                     *.csv file, use \',\' as delimiter; *.txt file, user \' \' as deliminter. 
-#                     Default file is tf_job.csv ''')
 simulator.flags.DEFINE_string('log_path', 'result-' + time.strftime("%Y%m%d-%H-%M-%S", time.localtime()),
                 '''Simulation output folder, including cluster/node/gpu usage trace, pending job_queue info.
                 Default folder is result-[time]''')
-# simulator.flags.DEFINE_string('scheme', 'yarn',
-#                 '''
-#                 Job placement scheme:
-#                 0.count, just resource counting, without assignment (which gpu, which cpu)
-#                 1.yarn, ms yarn
-#                 2.random
-#                 3.crandom (consolidate + random)
-#                 4.greedy
-#                 5.balance
-#                 6.cbalance (consolidate + balance)
-#                 Default is yarn''')
-# simulator.flags.DEFINE_string('schedule', 'fifo',
-#                 '''
-#                 Job schedule scheme:
-#                 1.fifo
-#                 2.fjf, fit job first( in fifo order)
-#                 3.sjf, smallest job first
-#                 4.lpjf, longest pending job first
-#                 5.shortest, shortest-remaining-time job first
-#                 6.shortest-gpu, shortest-remaining-gputime job first 
-#                 7.dlas, discretized las 
-#                 8.dlas-gpu, dlas using gpu time
-#                 Default is fifo''')
-# flags.DEFINE_string('scheme', 'random',
-#                 ''' TF job placement scheme (PS, and workers). 
-#                     Schemes:
-#                         1.random: randomly place PS and workers across all hosts
-#                         2.none: all jobs have the same placement (e.g. every ps0 on Node1)
-#                         3.half_random: for each job, still one ps/worker per machine, placements are random
-#                     Default scheme is random ''')
-# simulator.flags.DEFINE_integer('num_switch', 1, 
-#                 '''Part of cluster spec: the number of switches in this cluster, default is 1''')
-# simulator.flags.DEFINE_integer('num_node_p_switch', 32, 
-#                 '''Part of cluster spec: the number of nodes under a single switch, default is 32''')
-# simulator.flags.DEFINE_integer('num_gpu_p_node', 8, 
-#                 '''Part of cluster spec: the number of gpus on each node, default is 8''')
-# simulator.flags.DEFINE_integer('num_cpu_p_node', 64,
-#                 '''Part of cluster spec: the number of cpus on each node, default is 64''')
-# simulator.flags.DEFINE_integer('mem_p_node', 256,
-#                 '''Part of cluster spec: memory capacity on each node, default is 128''')
-# simulator.flags.DEFINE_string('cluster_spec', None,
-#                 '''Part of cluster spec: cluster infra spec file, 
-#                 this file will overwrite the specs from num_switch, num_node_p_switch, and num_gpu_p_node
-#                 Spec format:
-#                     num_switch,num_node_p_switch,num_gpu_p_node
-#                     int,int,int''')
-
 simulator.flags.DEFINE_boolean('print', False, 
                 '''Enable print out information, default is False''')
 simulator.flags.DEFINE_boolean('flush_stdout', True, 
@@ -103,8 +52,8 @@ simulator.flags.DEFINE_version('0.1')
 
 FLAGS = simulator.flags.FLAGS
 
-#prepare JOBS list
-JOBS = simulator.jobs.JOBS
+# #prepare JOBS list
+# JOBS = simulator.jobs.JOBS
 
 # #get host info
 # CLUSTER = simulator.cluster.CLUSTER
@@ -129,10 +78,10 @@ class Environment(object):
         # uses priority queue
         self.timeline = Timeline()
 
-        # # executors
-        # self.executors = OrderedSet()
-        # for exec_id in range(args.exec_cap):
-        #     self.executors.add(Executor(exec_id))
+        # executors
+        self.executors = OrderedSet()
+        for exec_id in range(args.exec_cap):
+            self.executors.add(Executor(exec_id))
 
         # # free executors
         # self.free_executors = FreeExecutors(self.executors)
@@ -166,50 +115,29 @@ class Environment(object):
         #     executor.reset()            
         # self.free_executors.reset(self.executors)
 
-        # generate a set of new jobs
-        self.job_dags = generate_jobs(self.np_random, self.timeline, self.wall_time)
-        
-        # map action to dag_idx and node_idx
-        self.action_map = compute_act_map(self.job_dags)
-        
-        # add initial set of jobs in the system
-        for job_dag in self.job_dags:
-            self.add_job(job_dag)
-        
-        # put all executors as source executors initially
-        self.source_job = None
-        self.num_source_exec = len(self.executors)
-        self.exec_to_schedule = OrderedSet(self.executors)
+        # # generate a set of new jobs
+        # self.job_dags = generate_jobs(self.np_random, self.timeline, self.wall_time)
 
-    def parse_job_file(trace_file):
-        #check trace_file is *.csv
-        fd = open(trace_file, 'r')
-        deli = ','
-        if ((trace_file.find('.csv') == (len(trace_file) - 4))):
-            deli = ','
-        elif ((trace_file.find('.txt') == (len(trace_file) - 4))):
-            deli = ' '
+        # prepare input
+        self.jobs = parse_job_file(self.np_random, self.timeline, self.wall_time)
+        
+        # # map action to dag_idx and node_idx
+        # self.action_map = compute_act_map(self.job_dags)
+        
+        # # add initial set of jobs in the system
+        # for job_dag in self.job_dags:
+        #     self.add_job(job_dag)
+        
+        # # put all executors as source executors initially
+        # self.source_job = None
+        # self.num_source_exec = len(self.executors)
+        # self.exec_to_schedule = OrderedSet(self.executors)
 
-        reader = csv.DictReader(fd, delimiter = deli) 
-        ''' Add job from job trace file'''
-        keys = reader.fieldnames
-        util.print_fn('--------------------------------- Read TF jobs from: %s ---------------------------------' % trace_file) 
-        util.print_fn('    we get the following fields:\n        %s' % keys)
-        job_idx = 0
-        for row in reader:
-            #add job into JOBS
-            JOBS.add_job(row)
-            # JOBS.read_job_info(job_idx, 'num_gpu')
-            job_idx += 1
-
-        assert job_idx == len(JOBS.job_list) 
-        assert JOBS.num_job == len(JOBS.job_list) 
-        # JOBS.print_all_job_size_info()
-        JOBS.sort_all_jobs()
-        # print(lp.prepare_job_info(JOBS.job_list[0]))
-        util.print_fn('---------------------------------- Get %d TF jobs in total ----------------------------------' % job_idx)
-        # JOBS.read_all_jobs()
-        fd.close()
+    def observe(self):
+        return self.jobs, self.cluster
+        # return self.job_dags, self.source_job, self.num_source_exec, \
+        #        self.get_frontier_nodes(), self.get_executor_limits(), \
+        #        self.exec_commit, self.moving_executors, self.action_map
 
     def parse_cluster_spec(self):
         if args.cluster_spec:
